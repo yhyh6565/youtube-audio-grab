@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  backend:
+    build: .
+    container_name: youtube-audio-backend
+    ports:
+      - "8000:8000"
+    volumes:
+      # 개발 시 코드 변경 즉시 반영
+      - ./app:/app/app
+      # 임시 파일은 컨테이너 내부에만 보관
+      - temp_files:/app/temp_files
+    environment:
+      - ENVIRONMENT=development
+      - ALLOWED_ORIGINS=http://localhost:5173,http://localhost:3000
+      - UPLOAD_DIR=temp_files
+      - MAX_FILE_AGE_HOURS=1
+      - RATE_LIMIT_PER_HOUR=10
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+volumes:
+  temp_files:
