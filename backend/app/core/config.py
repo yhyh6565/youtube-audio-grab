@@ -20,10 +20,27 @@ class Settings(BaseSettings):
 
     # Server settings
     HOST: str = "0.0.0.0"
-    PORT: int = 8000
+    PORT: int = int(os.getenv("PORT", "8000"))  # Railway uses dynamic PORT
 
     # Environment
     ENVIRONMENT: str = "development"
+
+    # Extraction progress thresholds
+    PROGRESS_VALIDATION_START: int = 0
+    PROGRESS_VALIDATION_END: int = 15
+    PROGRESS_DOWNLOAD_START: int = 15
+    PROGRESS_DOWNLOAD_END: int = 70
+    PROGRESS_THUMBNAIL_START: int = 70
+    PROGRESS_THUMBNAIL_END: int = 85
+    PROGRESS_EMBEDDING_START: int = 85
+    PROGRESS_EMBEDDING_END: int = 100
+
+    # UI delay times (seconds)
+    DELAY_STEP_TRANSITION: float = 0.3
+    DELAY_THUMBNAIL_EXTRACTION: float = 0.5
+
+    # Video duration warning threshold (seconds)
+    LONG_VIDEO_WARNING_SECONDS: int = 1800  # 30 minutes
 
     class Config:
         env_file = ".env"

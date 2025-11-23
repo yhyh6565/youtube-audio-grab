@@ -10,11 +10,10 @@ import { Button } from "@/components/ui/button";
 import { Download, Music, Sparkles } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { previewVideo, extractAudio, downloadFile, formatDuration, VideoInfo, PreviewData } from "@/lib/api";
-
-type Step = "input" | "preview" | "extracting" | "ready" | "complete";
+import { getExtractionSteps, type AppStep } from "@/lib/constants";
 
 export default function Index() {
-  const [currentStep, setCurrentStep] = useState<Step>("input");
+  const [currentStep, setCurrentStep] = useState<AppStep>("input");
   const [videoInfo, setVideoInfo] = useState<VideoInfo | null>(null);
   const [youtubeUrl, setYoutubeUrl] = useState(""); // Store the original YouTube URL
   const [copyrightAgreed, setCopyrightAgreed] = useState(false);
@@ -25,12 +24,7 @@ export default function Index() {
   const [previewData, setPreviewData] = useState<PreviewData | null>(null);
   const { toast } = useToast();
 
-  const extractionSteps = [
-    { id: "1", label: "영상 정보 확인", status: progress > 0 ? "completed" : "pending" },
-    { id: "2", label: "음원 다운로드", status: progress > 70 ? "completed" : progress > 15 ? "processing" : "pending" },
-    { id: "3", label: "썸네일 추출", status: progress > 85 ? "completed" : progress > 70 ? "processing" : "pending" },
-    { id: "4", label: "커버 이미지 삽입", status: progress === 100 ? "completed" : progress > 85 ? "processing" : "pending" },
-  ];
+  const extractionSteps = getExtractionSteps(progress);
 
   const handleUrlSubmit = async (url: string) => {
     setIsProcessing(true);

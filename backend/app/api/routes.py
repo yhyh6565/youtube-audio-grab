@@ -47,28 +47,29 @@ async def extract_audio(request: ExtractRequest):
         output_path = None
 
         try:
-            # Step 1: 영상 정보 확인 (0-15%)
-            yield f"data: {json.dumps({'step': 'validating', 'progress': 0, 'message': '영상 정보 확인 중...'})}\n\n"
-            await asyncio.sleep(0.3)
+            # Step 1: 영상 정보 확인
+            yield f"data: {json.dumps({'step': 'validating', 'progress': settings.PROGRESS_VALIDATION_START, 'message': '영상 정보 확인 중...'})}\n\n"
+            await asyncio.sleep(settings.DELAY_STEP_TRANSITION)
 
             video_info = await youtube_service.get_video_info(request.youtube_url)
 
-            yield f"data: {json.dumps({'step': 'validating', 'progress': 15, 'message': '영상 정보 확인 완료'})}\n\n"
-            await asyncio.sleep(0.3)
+            yield f"data: {json.dumps({'step': 'validating', 'progress': settings.PROGRESS_VALIDATION_END, 'message': '영상 정보 확인 완료'})}\n\n"
+            await asyncio.sleep(settings.DELAY_STEP_TRANSITION)
 
             # 세션 ID 및 파일 경로 생성
             import uuid
             session_id = str(uuid.uuid4())
             output_path = os.path.join(settings.upload_path, session_id)
 
-            # Step 2: 음원 다운로드 (15-70%)
-            last_progress = 15
+            # Step 2: 음원 다운로드
+            last_progress = settings.PROGRESS_DOWNLOAD_START
 
             def progress_callback(data):
                 nonlocal last_progress
-                # yt-dlp progress를 15-70% 범위로 매핑
+                # yt-dlp progress를 다운로드 진행률 범위로 매핑
                 percent = data.get('percent', 0)
-                mapped_progress = 15 + (percent * 0.55)  # 15% + (0-100% * 55%)
+                progress_range = settings.PROGRESS_DOWNLOAD_END - settings.PROGRESS_DOWNLOAD_START
+                mapped_progress = settings.PROGRESS_DOWNLOAD_START + (percent * progress_range / 100)
 
                 # 변화가 있을 때만 업데이트 (노이즈 감소)
                 if abs(mapped_progress - last_progress) >= 1:
@@ -76,7 +77,7 @@ async def extract_audio(request: ExtractRequest):
                     # SSE 이벤트는 비동기 컨텍스트에서만 전송 가능
                     # 여기서는 progress만 저장
 
-            yield f"data: {json.dumps({'step': 'downloading', 'progress': 15, 'message': '음원 다운로드 시작...'})}\n\n"
+            yield f"data: {json.dumps({'step': 'downloading', 'progress': settings.PROGRESS_DOWNLOAD_START, 'message': '음원 다운로드 시작...'})}\n\n"
 
             mp3_path = await youtube_service.download_audio(
                 request.youtube_url,
@@ -84,18 +85,18 @@ async def extract_audio(request: ExtractRequest):
                 progress_callback=None  # 콜백은 동기 함수라 SSE와 호환 안됨
             )
 
-            yield f"data: {json.dumps({'step': 'downloading', 'progress': 70, 'message': '음원 다운로드 완료'})}\n\n"
-            await asyncio.sleep(0.3)
+            yield f"data: {json.dumps({'step': 'downloading', 'progress': settings.PROGRESS_DOWNLOAD_END, 'message': '음원 다운로드 완료'})}\n\n"
+            await asyncio.sleep(settings.DELAY_STEP_TRANSITION)
 
-            # Step 3: 썸네일 추출 (70-85%)
-            yield f"data: {json.dumps({'step': 'extracting_thumbnail', 'progress': 70, 'message': '썸네일 추출 중...'})}\n\n"
-            await asyncio.sleep(0.5)
+            # Step 3: 썸네일 추출
+            yield f"data: {json.dumps({'step': 'extracting_thumbnail', 'progress': settings.PROGRESS_THUMBNAIL_START, 'message': '썸네일 추출 중...'})}\n\n"
+            await asyncio.sleep(settings.DELAY_THUMBNAIL_EXTRACTION)
 
-            yield f"data: {json.dumps({'step': 'extracting_thumbnail', 'progress': 85, 'message': '썸네일 추출 완료'})}\n\n"
-            await asyncio.sleep(0.3)
+            yield f"data: {json.dumps({'step': 'extracting_thumbnail', 'progress': settings.PROGRESS_THUMBNAIL_END, 'message': '썸네일 추출 완료'})}\n\n"
+            await asyncio.sleep(settings.DELAY_STEP_TRANSITION)
 
-            # Step 4: 커버 이미지 삽입 (85-100%)
-            yield f"data: {json.dumps({'step': 'embedding', 'progress': 85, 'message': '커버 이미지 삽입 중...'})}\n\n"
+            # Step 4: 커버 이미지 삽입
+            yield f"data: {json.dumps({'step': 'embedding', 'progress': settings.PROGRESS_EMBEDDING_START, 'message': '커버 이미지 삽입 중...'})}\n\n"
 
             await audio_service.embed_cover_image(
                 mp3_path,
@@ -106,8 +107,8 @@ async def extract_audio(request: ExtractRequest):
                 }
             )
 
-            yield f"data: {json.dumps({'step': 'embedding', 'progress': 100, 'message': '커버 이미지 삽입 완료'})}\n\n"
-            await asyncio.sleep(0.3)
+            yield f"data: {json.dumps({'step': 'embedding', 'progress': settings.PROGRESS_EMBEDDING_END, 'message': '커버 이미지 삽입 완료'})}\n\n"
+            await asyncio.sleep(settings.DELAY_STEP_TRANSITION)
 
             # 파일명 제안
             suggested_filename = parse_cover_filename(video_info['title'])
@@ -125,7 +126,7 @@ async def extract_audio(request: ExtractRequest):
             )
 
             # Step 5: 완료
-            yield f"data: {json.dumps({
+            complete_data = {
                 'step': 'complete',
                 'progress': 100,
                 'message': '완료!',
@@ -136,16 +137,18 @@ async def extract_audio(request: ExtractRequest):
                     'original_title': video_info['title'],
                     'duration': video_info['duration']
                 }
-            })}\n\n"
+            }
+            yield f"data: {json.dumps(complete_data)}\n\n"
 
         except VideoError as e:
             # 영상 관련 에러
-            yield f"data: {json.dumps({
+            error_data = {
                 'step': 'error',
                 'progress': 0,
                 'message': str(e),
                 'error_detail': 'video_error'
-            })}\n\n"
+            }
+            yield f"data: {json.dumps(error_data)}\n\n"
 
             # 임시 파일 정리
             if output_path and os.path.exists(f"{output_path}.mp3"):
@@ -153,12 +156,13 @@ async def extract_audio(request: ExtractRequest):
 
         except Exception as e:
             # 일반 에러
-            yield f"data: {json.dumps({
+            error_data = {
                 'step': 'error',
                 'progress': 0,
                 'message': '처리 중 오류가 발생했습니다',
                 'error_detail': str(e)
-            })}\n\n"
+            }
+            yield f"data: {json.dumps(error_data)}\n\n"
 
             # 임시 파일 정리
             if output_path and os.path.exists(f"{output_path}.mp3"):
