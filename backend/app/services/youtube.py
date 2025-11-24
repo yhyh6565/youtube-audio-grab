@@ -19,6 +19,9 @@ class YouTubeService:
             'quiet': True,
             'no_warnings': True,
             'skip_download': True,
+            'http_headers': {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36',
+            },
         }
 
     async def get_video_info(self, url: str) -> Dict:
@@ -126,6 +129,9 @@ class YouTubeService:
             'outtmpl': f"{output_path}.%(ext)s",
             'quiet': False,
             'no_warnings': False,
+            'http_headers': {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36',
+            },
             'progress_hooks': [progress_hook] if progress_callback else [],
         }
 
