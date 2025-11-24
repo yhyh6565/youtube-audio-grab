@@ -3,6 +3,7 @@ from typing import Dict, Optional, Callable
 import os
 import asyncio
 from concurrent.futures import ThreadPoolExecutor
+from app.core.config import settings
 
 
 class VideoError(Exception):
@@ -14,6 +15,15 @@ class YouTubeService:
     def __init__(self):
         self.executor = ThreadPoolExecutor(max_workers=3)
 
+        # 쿠키 파일 처리
+        self.cookie_file = None
+        if settings.YOUTUBE_COOKIES:
+            # temp_files 디렉토리가 없으면 생성 (이미 config.py에서 생성하지만 안전을 위해)
+            os.makedirs(settings.upload_path, exist_ok=True)
+            self.cookie_file = os.path.join(settings.upload_path, 'cookies.txt')
+            with open(self.cookie_file, 'w') as f:
+                f.write(settings.YOUTUBE_COOKIES)
+
         # 미리보기용 옵션
         self.ydl_opts_preview = {
             'quiet': True,
@@ -24,6 +34,9 @@ class YouTubeService:
             },
             'force_ipv4': True,
         }
+        
+        if self.cookie_file:
+            self.ydl_opts_preview['cookiefile'] = self.cookie_file
 
     async def get_video_info(self, url: str) -> Dict:
         """
@@ -136,6 +149,9 @@ class YouTubeService:
             'force_ipv4': True,
             'progress_hooks': [progress_hook] if progress_callback else [],
         }
+
+        if self.cookie_file:
+            ydl_opts['cookiefile'] = self.cookie_file
 
         try:
             loop = asyncio.get_event_loop()

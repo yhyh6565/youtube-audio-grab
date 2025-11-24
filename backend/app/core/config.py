@@ -24,6 +24,7 @@ class Settings(BaseSettings):
 
     # Environment
     ENVIRONMENT: str = os.getenv("ENVIRONMENT", "development")
+    YOUTUBE_COOKIES: str = os.getenv("YOUTUBE_COOKIES", "")
 
     # Extraction progress thresholds
     PROGRESS_VALIDATION_START: int = 0
