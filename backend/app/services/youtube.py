@@ -21,8 +21,10 @@ class YouTubeService:
             # temp_files 디렉토리가 없으면 생성 (이미 config.py에서 생성하지만 안전을 위해)
             os.makedirs(settings.upload_path, exist_ok=True)
             self.cookie_file = os.path.join(settings.upload_path, 'cookies.txt')
+            # 환경변수에서 줄바꿈이 \n 문자로 들어올 경우를 대비해 치환
+            cookie_content = settings.YOUTUBE_COOKIES.replace('\\n', '\n')
             with open(self.cookie_file, 'w') as f:
-                f.write(settings.YOUTUBE_COOKIES)
+                f.write(cookie_content)
 
         # 미리보기용 옵션
         self.ydl_opts_preview = {
