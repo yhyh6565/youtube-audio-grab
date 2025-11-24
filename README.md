@@ -2,6 +2,10 @@
 
 유튜브 커버곡을 쉽게 음원으로 추출하는 웹 서비스
 
+## 🚀 Live Demo
+- **프론트엔드**: https://youtube-audio-grab.vercel.app/
+- **백엔드 API**: https://youtube-audio-grab-production.up.railway.app/health
+
 ## 주요 기능
 
 - ✅ 유튜브 URL 입력만으로 자동 음원 추출

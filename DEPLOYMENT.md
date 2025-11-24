@@ -60,17 +60,25 @@ ENVIRONMENT=development
 
 ## 환경변수 체크리스트
 
-### 백엔드 환경변수
+### 백엔드 환경변수 (Railway)
 | 변수명 | 로컬 | 프로덕션 | 설명 |
 |--------|------|----------|------|
-| `ALLOWED_ORIGINS` | `http://localhost:5173` | `https://your-app.vercel.app` | CORS 허용 도메인 |
-| `PORT` | `8000` | `8000` | 서버 포트 |
-| `ENVIRONMENT` | `development` | `production` | 환경 |
+| `ALLOWED_ORIGINS` | `http://localhost:5173` | `https://youtube-audio-grab.vercel.app` | CORS 허용 도메인 (슬래시 없이!) |
+| `ENVIRONMENT` | `development` | `production` | **필수!** production 설정 시 hot-reload 비활성화 |
 
-### 프론트엔드 환경변수
+**주의사항:**
+- `PORT`는 Railway가 자동 설정하므로 **수동으로 설정하지 마세요**
+- `ALLOWED_ORIGINS`에 슬래시(`/`)를 포함하지 마세요
+
+### 프론트엔드 환경변수 (Vercel)
 | 변수명 | 로컬 | 프로덕션 | 설명 |
 |--------|------|----------|------|
-| `VITE_API_URL` | `http://localhost:8000/api` | `https://your-backend.railway.app/api` | 백엔드 API URL |
+| `VITE_API_URL` | `http://localhost:8000/api` | `https://youtube-audio-grab-production.up.railway.app/api` | 백엔드 API URL (`/api` 포함!) |
+
+**주의사항:**
+- 반드시 `https://` 프로토콜 포함
+- 반드시 `/api` 경로 포함
+- `ALLOWED_ORIGINS`, `ENVIRONMENT` 등 백엔드 환경변수는 **Vercel에 추가하지 마세요**
 
 ---
 
