@@ -37,8 +37,8 @@ async def preview_video(request: PreviewRequest):
         raise HTTPException(status_code=500, detail=f"서버 오류: {str(e)}")
 
 
-@router.post("/extract")
-async def extract_audio(request: ExtractRequest):
+@router.get("/extract")
+async def extract_audio(youtube_url: str):
     """
     음원 추출 (SSE 스트림)
     """
@@ -51,7 +51,7 @@ async def extract_audio(request: ExtractRequest):
             yield f"data: {json.dumps({'step': 'validating', 'progress': settings.PROGRESS_VALIDATION_START, 'message': '영상 정보 확인 중...'})}\n\n"
             await asyncio.sleep(settings.DELAY_STEP_TRANSITION)
 
-            video_info = await youtube_service.get_video_info(request.youtube_url)
+            video_info = await youtube_service.get_video_info(youtube_url)
 
             yield f"data: {json.dumps({'step': 'validating', 'progress': settings.PROGRESS_VALIDATION_END, 'message': '영상 정보 확인 완료'})}\n\n"
             await asyncio.sleep(settings.DELAY_STEP_TRANSITION)
@@ -80,7 +80,7 @@ async def extract_audio(request: ExtractRequest):
             yield f"data: {json.dumps({'step': 'downloading', 'progress': settings.PROGRESS_DOWNLOAD_START, 'message': '음원 다운로드 시작...'})}\n\n"
 
             mp3_path = await youtube_service.download_audio(
-                request.youtube_url,
+                youtube_url,
                 output_path,
                 progress_callback=None  # 콜백은 동기 함수라 SSE와 호환 안됨
             )
