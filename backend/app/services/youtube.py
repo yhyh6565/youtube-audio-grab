@@ -22,6 +22,7 @@ class YouTubeService:
             'http_headers': {
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36',
             },
+            'force_ipv4': True,
         }
 
     async def get_video_info(self, url: str) -> Dict:
@@ -132,6 +133,7 @@ class YouTubeService:
             'http_headers': {
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36',
             },
+            'force_ipv4': True,
             'progress_hooks': [progress_hook] if progress_callback else [],
         }
 
