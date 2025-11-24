@@ -23,7 +23,7 @@ class Settings(BaseSettings):
     PORT: int = int(os.getenv("PORT", "8000"))  # Railway uses dynamic PORT
 
     # Environment
-    ENVIRONMENT: str = "development"
+    ENVIRONMENT: str = os.getenv("ENVIRONMENT", "development")
 
     # Extraction progress thresholds
     PROGRESS_VALIDATION_START: int = 0
