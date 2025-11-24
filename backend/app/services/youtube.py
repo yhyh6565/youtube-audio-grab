@@ -123,9 +123,9 @@ class YouTubeService:
                 'preferredcodec': 'mp3',
                 'preferredquality': '192',
             }],
-            'outtmpl': output_path,
-            'quiet': True,
-            'no_warnings': True,
+            'outtmpl': f"{output_path}.%(ext)s",
+            'quiet': False,
+            'no_warnings': False,
             'progress_hooks': [progress_hook] if progress_callback else [],
         }
 
@@ -141,7 +141,10 @@ class YouTubeService:
             # MP3 파일 경로 반환 (.mp3 확장자 추가)
             mp3_path = f"{output_path}.mp3"
             if not os.path.exists(mp3_path):
-                raise VideoError('음원 파일 생성에 실패했습니다')
+                # 디버깅을 위해 디렉토리 내용 확인
+                dir_path = os.path.dirname(output_path)
+                files = os.listdir(dir_path) if os.path.exists(dir_path) else []
+                raise VideoError(f'음원 파일 생성에 실패했습니다. (Files in {dir_path}: {files})')
 
             return mp3_path
 
